@@ -1,13 +1,12 @@
-import { IsNotEmpty, IsString } from "class-validator";
+import { IsNotEmpty, IsNumber, IsString } from "class-validator";
 
 export class ExecuteCodeDto {
     @IsString()
     @IsNotEmpty()
     code: string;
 
-    @IsString()
-    @IsNotEmpty()
-    platform: string;
+    @IsNumber()
+    platform: number;
 
     @IsString()
     input: string;
