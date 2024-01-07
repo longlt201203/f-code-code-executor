@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Platform } from 'src/platform/entities/platform.entity';
 import { spawn } from 'child_process';
+import { CommandBuilder } from 'src/utils/command-builder';
 
 @Injectable()
 export class PlatformService {
@@ -23,8 +24,11 @@ export class PlatformService {
         ...createPlatformDto
       });
 
+      const command = CommandBuilder.dockerCommand();
+      command.pull(createPlatformDto.dockerImage);
+
       // Spawn the process
-      const cp = spawn(`docker pull ${createPlatformDto.dockerImage}`, {
+      const cp = spawn(command.toString(), {
         stdio: [null, process.stdout, process.stderr],
         shell: true
       });
