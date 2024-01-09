@@ -1,0 +1,33 @@
+version: "3.9"
+services:
+  be:
+    container_name: code_executor_api
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - 3000:3000
+    networks:
+      - code_executor_local_net
+    restart: always
+    develop:
+      watch:
+        - action: sync
+          path: ./src
+          target: /app/src
+        - action: sync
+          path: ./public
+          target: /app/public
+        - action: sync
+          path: ./views
+          target: /app/views
+        - action: rebuild
+          path: package.json
+        - action: rebuild
+          path: ./Dockerfile.dev
+        - action: rebuild
+          path: ./.env
+
+networks:
+  code_executor_local_net:
+    driver: bridge

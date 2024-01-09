@@ -7,6 +7,7 @@ import { exec, spawn } from "node:child_process";
 import { rimrafSync } from "rimraf";
 import * as pidusage from "pidusage";
 import { CommandBuilder } from "./command-builder";
+import { Command } from "src/utils/command";
 
 export type ExecuteStatus = "success" | "compile_error" | "runtime_error";
 
@@ -36,10 +37,10 @@ export class Executor {
 
             // Build file
             if (this.platform.buildCommand) {
-                const command = CommandBuilder.dockerCommand();
-                command.volume(`/${this.execName}`, `/app`);
-                command.run(this.platform.dockerImage, "-i");
-                command.Options.push(`cd /app | ${this.platform.buildCommand}`);
+                const command = new Command(
+                    "docker",
+                    ["run", "-v", `"${__dirname + "/../../" + this.execName}:/app"`, "-i", this.platform.dockerImage, this.platform.buildCommand],
+                );
                 command.Aliases["{file}"] = `${this.execName}.${this.platform.fileExt}`;
 
                 exec(command.toString(), (err, stdout, stderr) => {
@@ -58,11 +59,11 @@ export class Executor {
             let maxMem = 0;
             let maxCpu = 0;
             const outputs = [];
-            const command = CommandBuilder.dockerCommand();
-            command.volume(`"/${this.execName}"`, `/app`);
-            command.run(this.platform.dockerImage, "-i");
-            command.Options.push(`cd /app | ${this.platform.execCommand}`);
-            command.Aliases["{file}"] = `${this.execName}.${this.platform.fileBuiltExt ? this.platform.fileBuiltExt : this.platform.fileExt}`;
+            const command = new Command(
+                "docker",
+                ["run", "-v", `"${__dirname + "/../../" + this.execName}:/app"`, "-i", this.platform.dockerImage, this.platform.execCommand],
+            );
+            command.Aliases["{file}"] = `/app/${this.execName}.${this.platform.fileBuiltExt ? this.platform.fileBuiltExt : this.platform.fileExt}`;
             console.log(command.toString());
 
             // Spawn the child process
